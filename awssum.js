@@ -275,6 +275,7 @@ function stringifyQuery(params) {
 // function method()               -> string (the default method for the HTTP request)
 // function host()                 -> string (the host for this service/region)
 // function path()                 -> string (the default path for this service)
+// function port()                 -> number (the default port for this service)
 // function addExtras()            -> side effect, adds extra whatever
 // function addCommonOptions(options, args) -> side effect, adds the common headers/params for this service
 // function statusCode()           -> the expected status code
@@ -320,6 +321,10 @@ AwsSum.prototype.method = function() {
 
 AwsSum.prototype.path = function() {
     return '/';
+};
+
+AwsSum.prototype.port = function() {
+    return 443;
 };
 
 AwsSum.prototype.addExtras = function() { };
@@ -504,6 +509,21 @@ AwsSum.prototype.send = function(operation, args, opts, callback) {
         else {
             // since this is a program error, we're gonna throw this one
             throw 'Unknown operation.path : ' + typeof operation.path;
+        }
+    }
+
+    // build the port
+    options.port = self.port();
+    if ( operation.port ) {
+        if ( typeof operation.port === 'function' ) {
+            options.path = operation.port.apply(self, [ options, args ]);
+        }
+        else if ( typeof operation.port === 'number' ) {
+            options.port = operation.port;
+        }
+        else {
+            // since this is a program error, we're gonna throw this one
+            throw 'Unknown operation.port : ' + typeof operation.port;
         }
     }
 
